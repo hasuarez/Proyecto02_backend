@@ -24,8 +24,8 @@ Asegúrate de tener instalado:
 
 1.  **Clonar el repositorio:**
     ```bash
-    git clone <TU_URL_DEL_REPO>
-    cd biblioteca-backend
+    git clone <https://github.com/hasuarez/Proyecto02_backend.git>
+    cd Proyecto02_backend
     ```
 
 2.  **Instalar dependencias:**
