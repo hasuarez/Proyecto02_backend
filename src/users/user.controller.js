@@ -42,9 +42,8 @@ async function deleteUserController(idToDelete, userMakingRequest) {
 }
 
 
-
-async function readUsersController() {
-  return await readUsersAction();
+async function readUsersController(queryParams) { // <--- Recibir queryParams
+  return await readUsersAction(queryParams);      // <--- Pasarlos a la acción
 }
 
 // 2. Leer Un Usuario Específico

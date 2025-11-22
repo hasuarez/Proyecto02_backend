@@ -32,7 +32,7 @@ router.post('/', authMiddleware, async (req, res) => {
 });
 
 // GET /books
-router.get('/', authMiddleware, async (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const queryParams = req.query;
     const resultados = await readBooksController(queryParams);

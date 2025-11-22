@@ -1,50 +1,47 @@
 const Book = require('../book.model');
 
 async function readBooksAction({ filtro, page, limit }) {
-  // 1. Construir el filtro dinámico
-  const query = { isActive: true }; // Siempre excluimos los borrados
+  const query = {}; // Empezamos con el query vacío
 
-  // --- Filtros de Texto (Búsqueda flexible con Regex) ---
+  // --- LÓGICA DE EXCLUSIÓN (Corregida) ---
+  // Solo aplicamos el filtro "isActive: true" si NO nos pidieron incluir los borrados.
+  if (filtro.includeDeleted !== 'true') {
+    query.isActive = true;
+  }
+  // Si filtro.includeDeleted === 'true', entonces query.isActive no se define,
+  // y Mongo traerá tanto los activos (true) como los inactivos (false).
+
+  // --- Resto de filtros (Igual que antes) ---
   if (filtro.genero) {
     query.genero = { $regex: filtro.genero, $options: 'i' };
   }
   if (filtro.autor) {
     query.autor = { $regex: filtro.autor, $options: 'i' };
   }
-  if (filtro.titulo) { // Este cubre el requisito de filtrar por "nombre"
+  if (filtro.titulo) {
     query.titulo = { $regex: filtro.titulo, $options: 'i' };
   }
-  
-  // NUEVO: Filtro por Casa Editorial
   if (filtro.casaEditorial) {
     query.casaEditorial = { $regex: filtro.casaEditorial, $options: 'i' };
   }
-
-  // --- Filtros Exactos ---
-  
-  // NUEVO: Filtro por Fecha de Publicación
   if (filtro.fechaPublicacion) {
-    // Nota: La fecha debe enviarse exactamente igual a como se guardó (YYYY-MM-DD)
     query.fechaPublicacion = filtro.fechaPublicacion;
   }
-
-  // Filtro por Disponibilidad (true/false)
+  // Permitimos filtrar explícitamente por disponibilidad si se requiere
   if (filtro.disponibilidad !== undefined) {
     query.disponibilidad = filtro.disponibilidad;
   }
 
-  // 2. Calcular Paginación
+  // --- Paginación y Ejecución (Igual que antes) ---
   const paginaActual = parseInt(page) || 1;
   const librosPorPagina = parseInt(limit) || 10;
   const skip = (paginaActual - 1) * librosPorPagina;
 
-  // 3. Ejecutar la búsqueda
   const libros = await Book.find(query)
-    .select('titulo') // CUMPLE REQUISITO: "Tener unicamente el nombre de los libros"
+    .select('titulo isActive') // Agregamos isActive para ver si funcionó el filtro
     .skip(skip)
     .limit(librosPorPagina);
 
-  // 4. Contar el total (usando el mismo filtro)
   const totalLibros = await Book.countDocuments(query);
 
   return {
